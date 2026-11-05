@@ -21,6 +21,7 @@ targets:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.steadysteps.personal
         INFOPLIST_KEY_CFBundleDisplayName: Lego Bob Official Fitness App
+        INFOPLIST_KEY_CFBundleName: LEGO Bob Official Fitness App
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS: YES
 schemes:
