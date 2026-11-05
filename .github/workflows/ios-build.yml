@@ -1,0 +1,41 @@
+
+name: Build SteadySteps (no signing required)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: SteadySteps
+        run: xcodegen generate --spec project.yml
+
+      - name: Build for iOS Simulator
+        working-directory: SteadySteps
+        run: |
+          xcodebuild \
+            -project SteadySteps.xcodeproj \
+            -scheme SteadySteps \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO build
+
+      - name: Upload simulator build
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SteadySteps-Simulator-Only
+          path: SteadySteps/build/Build/Products/Debug-iphonesimulator/SteadySteps.app
+          if-no-files-found: error
