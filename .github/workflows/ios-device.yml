@@ -1,0 +1,52 @@
+
+name: Build SteadySteps for iPhone
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'SteadySteps/**'
+      - '.github/workflows/ios-device.yml'
+
+jobs:
+  build:
+    runs-on: macos-15
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        working-directory: SteadySteps
+        run: xcodegen generate --spec project.yml
+
+      - name: Build unsigned iPhone app
+        working-directory: SteadySteps
+        run: |
+          xcodebuild \
+            -project SteadySteps.xcodeproj \
+            -scheme SteadySteps \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package unsigned IPA
+        working-directory: SteadySteps
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/SteadySteps.app Payload/
+          zip -qry SteadySteps-unsigned.ipa Payload
+
+      - name: Upload IPA
+        uses: actions/upload-artifact@v4
+        with:
+          name: SteadySteps-iPhone-Unsigned
+          path: SteadySteps/SteadySteps-unsigned.ipa
+          if-no-files-found: error
